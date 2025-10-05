@@ -149,6 +149,27 @@ server/
    python migrate.py migrate
    ```
 
+7. **Download and setup AI models**:
+   ```bash
+   # Create the models directory if it doesn't exist
+   mkdir -p app/models/ai_models
+
+   # Download model weights from Google Drive
+   # Visit: https://drive.google.com/drive/folders/1cWBA7VtJWjOK36eiXdhwRgyDP2nXMWNS?usp=sharing
+   ```
+
+   **Required Model Files:**
+   Place the following model files in `server/app/models/ai_models/`:
+
+   - `best_resnet18_mri.pth` (42.7 MB) - Brain tumor classification model
+   - `swinunet_best (6).pth` (212.5 MB) - Brain tumor segmentation model
+   - `birads_model.pkl` (61.6 MB) - Breast cancer BI-RADS classification model
+   - `epoch=49-step=1750.ckpt` (143.9 MB) - Breast cancer pathological classification model
+   - `stroke_classification_model.h5` (273.1 MB) - Stroke classification model
+   - `model.pkl` (61.6 MB) - Additional breast cancer model
+
+   **Note:** Without these model weights, the AI diagnostic features will not function. The server will start but image analysis endpoints will return errors.
+
 ### Running the Server
 
 ```bash
