@@ -98,9 +98,9 @@ server/
 
 ### Installation
 
-1. **Navigate to the server directory**:
+1. **Clone git repository**:
    ```bash
-   cd server
+   git clone https://github.com/pfrimpong11/mid-tool-server
    ```
 
 2. **Create and activate virtual environment**:
@@ -444,9 +444,6 @@ docker-compose -f docker-compose.prod.yml up -d
 5. Use conventional commit messages
 6. Ensure all migrations are tested
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🆘 Support
 
