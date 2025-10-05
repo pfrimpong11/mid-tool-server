@@ -1,14 +1,36 @@
-version: '3.8'
+version: "3.8"
 
 services:
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    networks:
+      - web
+      - default
+
   db:
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 'Nana@postgresql'
-      POSTGRES_DB: medical_image_diagnostics
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,23 +38,46 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - default
 
   api:
     build: .
-    ports:
-      - "8000:8000"
     environment:
-      - POSTGRES_SERVER=db
+      - SECRET_KEY=your-super-secret-key-here-change-this-in-production
+      - POSTGRES_HOST=postgres
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=medical_diagnostics
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
       - POSTGRES_PORT=5432
+      - BACKEND_CORS_ORIGINS=https://yourdomain.com,http://localhost:3000,http://localhost:5173,http://localhost:8080
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - .:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`yourdomain.com`) || Host(`api.yourdomain.com`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+      # Redirect HTTP to HTTPS
+      - "traefik.http.routers.api-http.rule=Host(`yourdomain.com`) || Host(`api.yourdomain.com`)"
+      - "traefik.http.routers.api-http.entrypoints=web"
+      - "traefik.http.routers.api-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    networks:
+      - web
+      - default
 
 volumes:
   postgres_data:
+  letsencrypt:
+
+networks:
+  web:
+    external: true
+  default:
+    driver: bridge

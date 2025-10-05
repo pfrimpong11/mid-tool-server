@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     
     # Database settings - required from environment
-    POSTGRES_SERVER: str
+    POSTGRES_HOST: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
@@ -56,7 +56,7 @@ class Settings(BaseSettings):
             return f"sqlite:///./{self.POSTGRES_DB}.db"
         # URL encode the password to handle special characters
         encoded_password = urllib.parse.quote(self.POSTGRES_PASSWORD, safe='')
-        return f"postgresql://{self.POSTGRES_USER}:{encoded_password}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return f"postgresql+psycopg2://{self.POSTGRES_USER}:{encoded_password}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
     @property
     def ASYNC_DATABASE_URL(self) -> str:
@@ -64,7 +64,7 @@ class Settings(BaseSettings):
             return f"sqlite+aiosqlite:///./{self.POSTGRES_DB}.db"
         # URL encode the password to handle special characters
         encoded_password = urllib.parse.quote(self.POSTGRES_PASSWORD, safe='')
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{encoded_password}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{encoded_password}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
     # Password reset settings
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
