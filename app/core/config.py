@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     # Password reset settings
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
     
-    model_config = {"case_sensitive": True, "env_file": ".env"}
+    model_config = {"case_sensitive": True}
 
 
 settings = Settings()
